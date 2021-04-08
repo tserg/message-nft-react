@@ -20,6 +20,9 @@ function App() {
   const [getMessage, setGetMessage] = useState("");
   const [getMessageCreator, setGetMessageCreator] = useState('0x00');
 
+  const [tokenId, setTokenId] = useState(0);
+  const [transferReceiver, setTransferReceiver] = useState('0x00')
+
   const handleGetInfo = async (e) => {
     handleGetCurrentChain();
     handleGetCurrentWallet();
@@ -80,6 +83,21 @@ function App() {
 
     setGetMessage(message);
     setGetMessageCreator(messageCreator);
+  }
+
+  const handleTransferMessageNFT = async (e) => {
+    e.preventDefault();
+    const accounts = await window.ethereum.enable();
+    const account = accounts[0];
+    console.log(tokenId);
+    if (typeof(tokenId) != 'number') {
+      alert('You have not entered a valid token ID.');
+    } else if (!web3.utils.isAddress(transferReceiver)) {
+      alert('You have not entered a valid receiving address.');
+    } else {
+      const result = await MessageNFTContract.methods.transferFrom(account, transferReceiver, tokenId).send({ from: account });
+      console.log(result);
+    }
   }
 
   return (
@@ -147,6 +165,33 @@ function App() {
             <input type="submit" value="Create" />
           </p>
         </form>
+
+        <form onSubmit={handleTransferMessageNFT}>
+          <p>
+            <label>
+              Message token ID to transfer: &nbsp;
+              <input
+                type="number"
+                name="name"
+                value={tokenId}
+                onChange={ e => setTokenId(e.target.value) } />
+            </label>
+          </p>
+          <p>
+            <label>
+              Address to transfer message to: &nbsp;
+              <input
+                type="text"
+                name="name"
+                value={transferReceiver}
+                onChange={ e => setTransferReceiver(e.target.value) } />
+            </label>
+          </p>
+          <p>
+            <input type="submit" value="Transfer" />
+          </p>
+        </form>
+
       </header>
     </div>
   );
