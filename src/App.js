@@ -15,6 +15,7 @@ function App() {
   const [getCurrentChain, setGetCurrentChain] = useState('');
   const [getCurrentWallet, setGetCurrentWallet] = useState('0x00');
   const [message, setMessage] = useState("");
+  const [isPrivateMessage, setIsPrivateMessage] = useState(false);
   const [messageRecipient, setMessageRecipient] = useState("0x00");
   const [messageId, setViewMessage] = useState("0");
   const [getMessage, setGetMessage] = useState("");
@@ -55,6 +56,7 @@ function App() {
     const account = accounts[0];
     console.log(message);
     console.log(messageRecipient);
+    console.log(isPrivateMessage);
 
     if (message.length == 0) {
       alert('You have not entered a message.');
@@ -63,7 +65,7 @@ function App() {
     } else if (!web3.utils.isAddress(messageRecipient)) {
       alert('You have not entered a valid receiving address.');
     } else {
-      const result = await MessageNFTContract.methods.mint(messageRecipient, message).send({ from: account });
+      const result = await MessageNFTContract.methods.mint(messageRecipient, message, isPrivateMessage).send({ from: account });
       console.log(result);
     }
   }
@@ -72,7 +74,7 @@ function App() {
     e.preventDefault();
     const accounts = await window.ethereum.enable();
     const account = accounts[0];
-    const message = await MessageNFTContract.methods.viewMessage(messageId).call();
+    const message = await MessageNFTContract.methods.viewMessage(messageId).call( { from: account} );
     const messageCreator = await MessageNFTContract.methods.viewMessageCreator(messageId).call();
     console.log(message);
     console.log(messageCreator);
@@ -149,6 +151,25 @@ function App() {
                 name="name"
                 value={message}
                 onChange={ e => setMessage(e.target.value) } />
+            </label>
+          </p>
+          <p>
+            <label>
+              Private message? &nbsp;
+              <input
+                type="radio"
+                value="false"
+                checked={isPrivateMessage === "false"}
+                onChange={ e => setIsPrivateMessage(e.target.value)}
+              />
+              No &nbsp;
+              <input
+                type="radio"
+                value="true"
+                checked={isPrivateMessage === "true"}
+                onChange={ e => setIsPrivateMessage(e.target.value)}
+              />
+              Yes
             </label>
           </p>
           <p>
