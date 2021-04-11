@@ -74,13 +74,19 @@ function App() {
     e.preventDefault();
     const accounts = await window.ethereum.enable();
     const account = accounts[0];
-    const message = await MessageNFTContract.methods.viewMessage(messageId).call( { from: account} );
+    await MessageNFTContract.methods.viewMessage(messageId).call().then((response) => {
+      message = response;
+    }).catch((error) => {
+      alert('You do not have access to this message.');
+    });
     const messageCreator = await MessageNFTContract.methods.viewMessageCreator(messageId).call();
     console.log(message);
     console.log(messageCreator);
 
     if (message == '' && messageCreator == '0x0000000000000000000000000000000000000000') {
         alert('This message token does not exist.');
+    } else if (message == null ) {
+        alert('Error!');
     }
 
     setGetMessage(message);
