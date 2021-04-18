@@ -10,14 +10,15 @@ const { REACT_APP_CONTRACT_ADDR } = process.env;
 
 const MessageNFTContract = new web3.eth.Contract(MessageNFT_Abi, REACT_APP_CONTRACT_ADDR);
 
+
 function App() {
 
+  const [getContractAddress, setContractAddress] = useState('0x00');
   const [getCurrentChain, setGetCurrentChain] = useState('');
   const [getCurrentWallet, setGetCurrentWallet] = useState('0x00');
   const [message, setMessage] = useState("");
-  const [isPrivateMessage, setIsPrivateMessage] = useState(false);
   const [messageRecipient, setMessageRecipient] = useState("0x00");
-  const [messageId, setViewMessage] = useState("0");
+  const [messageId, setViewMessage] = useState("1");
   const [getMessage, setGetMessage] = useState("");
   const [getMessageCreator, setGetMessageCreator] = useState('0x00');
 
@@ -25,18 +26,23 @@ function App() {
   const [transferReceiver, setTransferReceiver] = useState('0x00')
 
   const handleGetInfo = async (e) => {
+    await window.ethereum.enable();
     handleGetCurrentChain();
     handleGetCurrentWallet();
+    setContractAddress(REACT_APP_CONTRACT_ADDR);
   }
+
   const handleGetCurrentChain = async () => {
     const currentChain = await web3.eth.getChainId();
 
-    if (currentChain == 3) {
-      var currentChainDescription = 'Ropsten';
-    } else if (currentChain == 1) {
-      var currentChainDescription = 'Mainnet';
+    var currentChainDescription = ''
+
+    if (currentChain === 3) {
+      currentChainDescription = 'Ropsten';
+    } else if (currentChain === 1) {
+      currentChainDescription = 'Mainnet';
     } else {
-      var currentChainDescription = 'Localhost';
+      currentChainDescription = 'Localhost';
     }
 
     setGetCurrentChain(currentChainDescription);
@@ -56,41 +62,44 @@ function App() {
     const account = accounts[0];
     console.log(message);
     console.log(messageRecipient);
-    console.log(isPrivateMessage);
 
-    if (message.length == 0) {
+    if (message.length === 0) {
       alert('You have not entered a message.');
-    } else if (message.length == 100) {
+    } else if (message.length === 100) {
       alert('Your message is longer than 100 characters.');
     } else if (!web3.utils.isAddress(messageRecipient)) {
       alert('You have not entered a valid receiving address.');
     } else {
-      const result = await MessageNFTContract.methods.mint(messageRecipient, message, isPrivateMessage).send({ from: account });
+      const result = await MessageNFTContract.methods.mint(messageRecipient, message).send({ from: account });
       console.log(result);
     }
   }
 
   const handleRetrieveMessage = async (e) => {
     e.preventDefault();
-    const accounts = await window.ethereum.enable();
-    const account = accounts[0];
     await MessageNFTContract.methods.viewMessage(messageId).call().then((response) => {
-      message = response;
+      var message = response;
+      console.log(message);
+      setGetMessage(message);
     }).catch((error) => {
-      alert('You do not have access to this message.');
+      alert('The token ID does not exist.');
     });
-    const messageCreator = await MessageNFTContract.methods.viewMessageCreator(messageId).call();
-    console.log(message);
-    console.log(messageCreator);
 
-    if (message == '' && messageCreator == '0x0000000000000000000000000000000000000000') {
-        alert('This message token does not exist.');
-    } else if (message == null ) {
-        alert('Error!');
-    }
+    await MessageNFTContract.methods.viewMessageCreator(messageId).call().then((response) => {
+      var messageCreator = response;
 
-    setGetMessage(message);
-    setGetMessageCreator(messageCreator);
+      if (messageCreator === '0x0000000000000000000000000000000000000000') {
+          alert('This message token does not exist.');
+      } else {
+        setGetMessageCreator(messageCreator);
+      }
+    }).catch((error) => {
+      alert('Error!');
+    });
+
+
+
+
   }
 
   const handleTransferMessageNFT = async (e) => {
@@ -124,6 +133,10 @@ function App() {
         <p>
           Current Wallet: &nbsp;
           { getCurrentWallet }
+        </p>
+        <p>
+          Contract address: &nbsp;
+          { getContractAddress }
         </p>
 
         <form onSubmit={handleRetrieveMessage}>
@@ -159,25 +172,7 @@ function App() {
                 onChange={ e => setMessage(e.target.value) } />
             </label>
           </p>
-          <p>
-            <label>
-              Private message? &nbsp;
-              <input
-                type="radio"
-                value="false"
-                checked={isPrivateMessage === "false"}
-                onChange={ e => setIsPrivateMessage(e.target.value)}
-              />
-              No &nbsp;
-              <input
-                type="radio"
-                value="true"
-                checked={isPrivateMessage === "true"}
-                onChange={ e => setIsPrivateMessage(e.target.value)}
-              />
-              Yes
-            </label>
-          </p>
+
           <p>
             <label>
               Address to send message to: &nbsp;
