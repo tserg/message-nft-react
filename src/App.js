@@ -135,8 +135,9 @@ function App() {
         console.log(message);
       }
 
+      setGetAllMessages(messages.map((message) => <li key={message[0]}>{message[0]} - {message[1]}</li>));
+
     }
-    setGetAllMessages(messages.map((message) => <li key={message[0]}>{message[0]} - {message[1]}</li>));
 
   }
 
