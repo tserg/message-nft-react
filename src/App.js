@@ -10,7 +10,6 @@ const { REACT_APP_CONTRACT_ADDR } = process.env;
 
 const MessageNFTContract = new web3.eth.Contract(MessageNFT_Abi, REACT_APP_CONTRACT_ADDR);
 
-
 function App() {
 
   const [getContractAddress, setContractAddress] = useState('0x00');
@@ -21,6 +20,7 @@ function App() {
   const [messageId, setViewMessage] = useState("1");
   const [getMessage, setGetMessage] = useState("");
   const [getMessageCreator, setGetMessageCreator] = useState('0x00');
+  const [getAllMessages, setGetAllMessages] = useState([]);
 
   const [tokenId, setTokenId] = useState(0);
   const [transferReceiver, setTransferReceiver] = useState('0x00')
@@ -97,9 +97,6 @@ function App() {
       alert('Error!');
     });
 
-
-
-
   }
 
   const handleTransferMessageNFT = async (e) => {
@@ -115,6 +112,32 @@ function App() {
       const result = await MessageNFTContract.methods.transferFrom(account, transferReceiver, tokenId).send({ from: account });
       console.log(result);
     }
+  }
+
+  const handleGetAllMessages = async (e) => {
+    e.preventDefault();
+    const accounts = await window.ethereum.enable();
+    const account = accounts[0];
+
+    var accountBalance = await MessageNFTContract.methods.balanceOf(account).call();
+
+    console.log(accountBalance);
+
+    if (accountBalance > 0) {
+
+      var i;
+      var messages = [];
+      for (i = 1; i<=accountBalance; i++) {
+
+        var messageId = await MessageNFTContract.methods.tokenOfOwnerByIndex(account, i).call();
+        var message = await MessageNFTContract.methods.viewMessage(messageId).call();
+        messages.push([messageId, message]);
+        console.log(message);
+      }
+
+    }
+    setGetAllMessages(messages.map((message) => <li key={message[0]}>{message[0]} - {message[1]}</li>));
+
   }
 
   return (
@@ -213,7 +236,15 @@ function App() {
             <input type="submit" value="Transfer" />
           </p>
         </form>
-
+        <button
+          onClick={handleGetAllMessages}
+          type="button" >
+          Get all messages for this address
+        </button>
+        <p>
+          Messages: &nbsp;
+          { getAllMessages }
+        </p>
       </header>
     </div>
   );
