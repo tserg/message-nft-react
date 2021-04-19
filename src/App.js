@@ -134,11 +134,8 @@ function App() {
         messages.push([messageId, message]);
         console.log(message);
       }
-
-      setGetAllMessages(messages.map((message) => <li key={message[0]}>{message[0]} - {message[1]}</li>));
-
+      setGetAllMessages(messages.map((message) => <tr key={message[0]}><td>{message[0]}</td><td>{message[1]}</td></tr>));
     }
-
   }
 
   return (
@@ -244,8 +241,15 @@ function App() {
         </button>
         <p>
           Messages: &nbsp;
-          { getAllMessages }
+
         </p>
+        <table>
+          <tr>
+            <th>Token ID</th>
+            <th>Message</th>
+          </tr>
+          { getAllMessages }
+        </table>
       </header>
     </div>
   );
