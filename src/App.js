@@ -131,10 +131,11 @@ function App() {
 
         var messageId = await MessageNFTContract.methods.tokenOfOwnerByIndex(account, i).call();
         var message = await MessageNFTContract.methods.viewMessage(messageId).call();
-        messages.push([messageId, message]);
+        var messageCreator = await MessageNFTContract.methods.viewMessageCreator(messageId).call();
+        messages.push([messageId, messageCreator, message]);
         console.log(message);
       }
-      setGetAllMessages(messages.map((message) => <tr key={message[0]}><td>{message[0]}</td><td>{message[1]}</td></tr>));
+      setGetAllMessages(messages.map((message) => <tr key={message[0]}><td>{message[0]}</td><td>{message[1]}</td><td>{message[2]}</td></tr>));
     }
   }
 
@@ -246,6 +247,7 @@ function App() {
         <table>
           <tr>
             <th>Token ID</th>
+            <th>Creator</th>
             <th>Message</th>
           </tr>
           { getAllMessages }
